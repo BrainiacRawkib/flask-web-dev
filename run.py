@@ -32,4 +32,4 @@ def internal_server_error(e):
 def index():
     name = None
     form = ''
-    return render_template('index.html', current_time=datetime.utcnow())
+    return render_template('index.html')
