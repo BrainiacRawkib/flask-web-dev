@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, render_template, redirect, session, url_for, flash
 from flask_bootstrap import Bootstrap
+from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from flask_moment import Moment
 from flask_wtf import FlaskForm
@@ -13,14 +14,23 @@ from wtforms.validators import DataRequired
 basedir = os.path.abspath(os.path.dirname(__name__))
 
 app = Flask(__name__)
+
+app.config["FLASK_ADMIN"] = os.environ.get("FLASKY_ADMIN")
+app.config["FLASKY_MAIL_SUBJECT_PREFIX"] = "[FLASKY]"
+app.config["FLASKY_MAIL_SENDER"] = "Flasky Admin <flasky@example.com>"
 app.config["SECRET_KEY"] = "RANDOM STRING TO GUESS"
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "data.sqlite")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
+mail = Mail(app)
 moment = Moment(app)
-
 migrate = Migrate(app, db)
 
 
@@ -42,6 +52,14 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config["FLASKY_MAIL_SUBJECT_PREFIX"] + " " + subject,
+                  sender=app.config["FLASKY_MAIL_SENDER"], recipients=[to])
+    msg.body = render_template(template + ".txt", **kwargs)
+    msg.html = render_template(template + ".html", **kwargs)
+    mail.send(msg)
 
 
 class NameForm(FlaskForm):
@@ -72,10 +90,11 @@ def index():
         if user is None:
             user = User(username=form.name.data)
             db.session.add(user)
-            db.session.commit()
             session['known'] = False
+            if app.config["FLASKY_ADMIN"]:
+                send_email(app.config["FLASKY_ADMIN"], "New User", "mail/new_user", user=user)
         else:
-            session['known'] = True
+            session["known"] = True
         session['name'] = form.name.data
         form.name.data = ""
         return redirect(url_for('index'))
