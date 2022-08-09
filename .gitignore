@@ -9,7 +9,6 @@ db.sqlite3
 *.sqlite
 *.sqlite3
 media/
-migrations/
 cert.crt
 cert.key
 app_pass.txt
