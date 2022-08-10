@@ -1,5 +1,4 @@
 import os
-import click
 from flask_migrate import Migrate
 from app import create_app, db
 from app.models import User, Role
@@ -15,7 +14,6 @@ def make_shell_context():
 
 
 @app.cli.command()
-@click.argument('test_names', nargs=-1)
 def test():
     """Run the unit tests."""
     import unittest
