@@ -33,6 +33,10 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Log in")
 
 
-class NameForm(FlaskForm):
-    name = StringField('What is your name?', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+class ChangePasswordForm(FlaskForm):
+    old_password = PasswordField('Old password', validators=[DataRequired()])
+    password = PasswordField('New password', validators=[
+        DataRequired(), EqualTo('password2', message='Passwords must match.')])
+    password2 = PasswordField('Confirm new password',
+                              validators=[DataRequired()])
+    submit = SubmitField('Update Password')
