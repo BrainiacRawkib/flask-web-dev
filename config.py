@@ -5,7 +5,7 @@ basedir = os.path.abspath(os.path.dirname(__name__))
 
 
 class Config:
-    FLASK_ADMIN = os.environ.get("FLASKY_ADMIN")
+    FLASKY_ADMIN = os.environ.get("FLASKY_ADMIN")
     SECRET_KEY = "RANDOM STRING TO GUESS"
     FLASKY_MAIL_SUBJECT_PREFIX = "[FLASKY]"
     FLASKY_MAIL_SENDER = "Flasky Admin <flasky@example.com>"
