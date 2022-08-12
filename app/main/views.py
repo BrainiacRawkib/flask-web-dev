@@ -16,7 +16,7 @@ def index():
         db.session.commit()
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.ordey_by(Post.timestamp.desc()).paginate(
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_PAGINATION'], error_out=False
     )
     posts = pagination.items
