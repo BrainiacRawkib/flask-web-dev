@@ -82,3 +82,9 @@ def user_posts(username):
         abort(404)
     posts = user_posts.posts.order_by(Post.timestamp.desc()).all()
     return render_template('user.html', user=user, posts=posts)
+
+
+@main.route('/post/<int:id>')
+def post(id):
+    post = Post.query.get_or_404(id)
+    return render_template('post.html', posts=[post])
