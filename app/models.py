@@ -134,7 +134,7 @@ class User(UserMixin, db.Model):
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     followed = db.relationship('Follow',
                                foreign_keys=[Follow.follower_id],
-                               backref=db.backref('follower', lazy='dynamic'),
+                               backref=db.backref('follower', lazy='joined'),
                                lazy='dynamic',
                                cascade='all, delete-orphan')
     followers = db.relationship('Follow',
@@ -260,6 +260,11 @@ class User(UserMixin, db.Model):
         if user.id is None:
             return False
         return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+            .filter(Follow.follower_id == self.id)
 
     def __repr__(self):
         return '<User %r>' % self.username
