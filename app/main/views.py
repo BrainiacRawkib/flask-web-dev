@@ -1,7 +1,7 @@
 from flask import current_app, render_template, redirect, url_for, flash, abort, request
 from flask_login import login_required, current_user
 from .. import db
-from ..decorators import admin_required
+from ..decorators import admin_required, permission_required
 from ..models import User, Role, Permission, Post
 from . import main
 from .forms import PostForm, EditProfileForm, EditProfileAdminForm
@@ -105,3 +105,39 @@ def edit(id):
         return redirect(url_for('main.post', id=post.id))
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
+
+
+@main.route('/follow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('main.index'))
+    if current_user.is_following(user):
+        flash('You are already following this user.')
+        return redirect(url_for('main.user', username=username))
+    current_user.follow(user)
+    db.session.commit()
+    flash(f'You are now following {username}')
+    return redirect(url_for('main.user', username=username))
+
+
+@main.route('/followers/<username>')
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('main.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followers.paginate(
+        page, per_page=current_app.config['FLASKY_PAGINATION'], error_out=False
+    )
+    follows = [{'user': item.follower, 'timestamp': item.timestamp} for item in pagination.items]
+    return render_template('followers.html',
+                           user=user,
+                           title='Followers of',
+                           endpoint='main.followers',
+                           pagination=pagination,
+                           follows=follows)
