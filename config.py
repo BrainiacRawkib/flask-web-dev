@@ -9,6 +9,7 @@ class Config:
     FLASKY_PAGINATION = 20
     FLASKY_COMMENT_PER_PAGE = 10
     FLASKY_FOLLOWERS_PER_PAGE = 50
+    FLASKY_SLOW_DB_QUERY_TIME = 0.5
     SECRET_KEY = "RANDOM STRING TO GUESS"
     FLASKY_MAIL_SUBJECT_PREFIX = "[FLASKY]"
     FLASKY_MAIL_SENDER = "Flasky Admin <flasky@example.com>"
@@ -18,6 +19,7 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_RECORD_QUERIES = True
 
     @staticmethod
     def init_app(app):
