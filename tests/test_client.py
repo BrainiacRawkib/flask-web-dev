@@ -22,7 +22,7 @@ class FlaskClientTestCase(unittest.TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         # self.assertTrue('Stranger' in response.get_data(as_text=True))
-        self.assertTrue(b'Stranger' in response.data)
+        self.assertTrue(b'Stranger' in response.get_data(as_text=True))
 
     def test_register_and_login(self):
         # register a new account
@@ -41,7 +41,7 @@ class FlaskClientTestCase(unittest.TestCase):
         }, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(re.search(b'Hello,\s+john!', response.data))
-        self.assertTrue(b'You have not confirmed your account yet' in response.data)
+        self.assertTrue(b'You have not confirmed your account yet' in response.get_data(as_text=True))
 
         # send a confirmation token
         user = User.query.filter_by(email='john@example.com').first()
@@ -54,5 +54,5 @@ class FlaskClientTestCase(unittest.TestCase):
         # log out
         response = self.client.get('/auth/logout', follow_redirects=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(b'You have been logged out' in response.data)
+        self.assertTrue(b'You have been logged out' in response.get_data(as_text=True))
 
