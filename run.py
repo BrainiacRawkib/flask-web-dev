@@ -10,7 +10,7 @@ if os.environ.get('FLASK_COVERAGE'):
 
 import sys
 import click
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from app import create_app, db
 from app.models import User, Role, Permission, Post
 from app.fake import users, posts
@@ -51,3 +51,25 @@ def test(coverage, test_names):
         COV.html_report(directory=covdir)
         print(f'HTML version: file://{covdir}/index.html')
         COV.erase()
+
+
+@app.cli.command()
+@click.option('--length', default=25, help='Number of functions to include in the profiler report.')
+@click.option('--profile-dir', default=None, help='Directory where profiler data files are saved.')
+def profile(length, profile_dir):
+    """Start the application under the code profiler."""
+    from werkzeug.contrib.profiler import ProfilerMiddleware
+    app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[length], profile_dir=profile_dir)
+
+
+@app.cli.command()
+def deploy():
+    """Run deployment tasks."""
+    # migrate database to latest revision
+    upgrade()
+
+    # create or update user roles
+    Role.insert_roles()
+
+    # ensure all users are following themselves
+    User.add_self_follows()
